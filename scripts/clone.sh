@@ -35,5 +35,15 @@ clone() {
     done
 }
 
+usage() {
+    echo -e "Clone @source to @output directory with the prefix and extension as source has and with the postfix number from @start to @finish.\n"
+    echo -e "\tusage: $0 source output start finish\n"
+}
+
+if [ $# -ne 4 ]; then
+    usage
+    exit 0
+fi
+
 mkdir -p "$2"
 clone "$1" "$2" "$3" "$4"

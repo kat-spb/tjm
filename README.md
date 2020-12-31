@@ -35,8 +35,8 @@ Required:
 
 ## Dependencies
 
-* OpenJpeg library [openjpeg](https://github.com/uclouvain/openjpeg)
-* ASDCP Lib [asdcplib](https://github.com/cinecert/asdcplib)
+* OpenJPEG [openjpeg](https://github.com/uclouvain/openjpeg)
+* AS-DCP Lib [asdcplib](https://github.com/cinecert/asdcplib)
 * FFMpeg [ffmpef](https://github.com/FFmpeg/FFmpeg)
 
 
@@ -61,7 +61,7 @@ make
 
 ## Documentation
 
-The offline documentation is available in the **doc/** directory.
+TODO: The offline documentation is available in the **doc/** directory.
 
 ## Examples
 

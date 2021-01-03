@@ -39,6 +39,9 @@ Required:
 * AS-DCP Lib [asdcplib](https://github.com/cinecert/asdcplib)
 * FFMpeg [ffmpef](https://github.com/FFmpeg/FFmpeg)
 
+## Step-by-step
+
+How to build and use tools you can see on page [step by step](https://github.com/kat-spb/tjm/wiki/Step-by-step)
 
 ## Build sources
 

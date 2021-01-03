@@ -10,6 +10,7 @@ Thits is a collection of tools for convertation digital cinema formats TIF -> JP
 ## License
 
 [![badge-license]][link-license]
+
 As the TJM code is released under the BSD 2-clause "Simplified" License, anyone can use or modify the code, even for commercial applications.
 
 ## Tools

@@ -46,6 +46,8 @@ How to build and use tools you can see on page [step by step](https://github.com
 
 ## Build sources
 
+TODO:
+
 ```cd tjm
 rm -rf build && mkdir build
 cd build
@@ -55,9 +57,13 @@ make
 
 ## Build Debian package
 
+TODO:
+
 ```dpkg-buildpackage -rfakeroot```
 
 ## Instalation
+
+TODO:
 
 ```make install```
 

@@ -66,7 +66,7 @@ int detect_format_by_magicnum(const char *filename) {
     switch (magic_number) {
         //JPEG
         case 0x002A4949:
-        case 0x494942A00:
+        case 0x49492A00:
             return FMT_TIF;
         case 0x000000C0:
         case 0xC0000000:
@@ -167,8 +167,10 @@ void set_cinema_encoder_parameters(int cinema_profile, opj_cparameters_t *parame
 
 int write_image(opj_image_t *image, const char *dst){
     int rc = -1;
+#if 0
     int max_comp_size;
     int max_cs_len;
+#endif
     opj_cparameters_t parameters;
     opj_codec_t* l_codec = 0;
     opj_stream_t *l_stream = 0;

@@ -97,9 +97,9 @@ char *split_filename(const char *filename, char **ppath, char **pbase, char **pe
     }
     else {
         base = result;
-//        *ppath = ".";
+        *ppath = (char*)".";
     }
-    char *ext  = strrchr(result, '.');
+    char *ext  = strrchr(base, '.');
     if (ext) {
         *ext++ = '\0';
     }

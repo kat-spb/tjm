@@ -42,7 +42,7 @@ Required:
 
 ## Step-by-step
 
-How to build and use tools you can see on page [step by step](https://github.com/kat-spb/tjm/wiki/Step-by-step)
+How to build and use tools you can see on page [step by step](https://github.com/kat-spb/tjm/wiki/Step-by-step).
 
 ## Build sources
 
@@ -64,6 +64,8 @@ make
 ```sudo dpkg -i tjm```
 
 ## Documentation
+
+More information about convering tools [here](https://github.com/kat-spb/tjm/wiki).
 
 TODO: The offline documentation is available in the **doc/** directory.
 

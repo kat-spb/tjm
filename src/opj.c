@@ -42,7 +42,7 @@ int detect_format_by_extension(const char *filename) {
             return FMT_UNKNOWN;
         ext++;
         if (ext) {
-            for (int i = 0; i < sizeof(format) / sizeof(*format); i++) {
+            for (unsigned long int i = 0; i < sizeof(format) / sizeof(*format); i++) {
                  if(strcasecmp(ext, extensions[i]) == 0) {
                         return format[i];
                  }
@@ -80,6 +80,28 @@ int detect_format_by_magicnum(const char *filename) {
     return FMT_UNKNOWN;
 }
 
+void set_extended_encoder_parameters(int profile, opj_cparameters_t *parameters) {
+    char profile_string[40] = "OPJ_PROFILE_IMF_4K";
+    int mainlevel = 7;
+    int sublevel = 0;
+    switch (profile) {
+        case OPJ_PROFILE_IMF_4K:
+            strcpy(profile_string, "OPJ_PROFILE_IMF_4K");
+            break;
+        case OPJ_PROFILE_IMF_4K_R:
+            strcpy(profile_string, "OPJ_PROFILE_IMF_4K_R");
+            break;
+        default:
+            profile = OPJ_PROFILE_PART2;
+            strcpy(profile_string, "OPJ_PROFILE_PART2");
+    } 
+    parameters->rsiz = (OPJ_UINT16)(profile | (sublevel << 4) | mainlevel);
+    fprintf(stdout, "IMF profile %s activated\n", profile_string);
+    parameters->irreversible = 0;
+    //fprintf(stdout, "DWT 5-3 activeted\n");
+}
+
+
 int read_image(opj_image_t **p_image, char *src){
     int fmt_e = detect_format_by_extension(src);
     int fmt_h = detect_format_by_magicnum(src);
@@ -92,6 +114,7 @@ int read_image(opj_image_t **p_image, char *src){
     switch(fmt_h) {
         case FMT_TIF:
             opj_set_default_encoder_parameters(&parameters);
+            set_extended_encoder_parameters(OPJ_PROFILE_IMF_4K_R, &parameters);
             parameters.tcp_mct = (char)255;
             *p_image = tiftoimage(src, &parameters);
             return 0;
@@ -176,19 +199,8 @@ int write_image(opj_image_t *image, const char *dst){
     opj_stream_t *l_stream = 0;
     int fmt = detect_format_by_extension(dst);
 
-#if 0
-    //set the max image and component sizes based on frame_rate
-    max_cs_len = ((double)bw)/8/frame_rate;
-    max_comp_size = ((double)max_cs_len)/1.25;
-
     opj_set_default_encoder_parameters(&parameters);
-    //Set default cinema parameters - OPJ_PROFILE_CINEMA_2K or OPJ_PROFILE_CINEMA_2K
-    set_cinema_encoder_parameters(OPJ_PROFILE_CINEMA_4K, &parameters);
-    parameters.max_comp_size = max_comp_size;
-    parameters.tcp_rates[0]= ((float) (opj_image->numcomps * opj_image->comps[0].w * opj_image->comps[0].h * opj_image->comps[0].prec))/(max_cs_len * 8 * opj_image->comps[0].dx * opj_image->comps[0].dy);
-#endif
-
-    opj_set_default_encoder_parameters(&parameters);
+    set_extended_encoder_parameters(OPJ_PROFILE_IMF_4K_R, &parameters);
     parameters.tcp_mct = (image->numcomps >= 3) ? 1 : 0;
 
     //TODO: place to think about J2K/J2C
@@ -218,6 +230,7 @@ int write_image(opj_image_t *image, const char *dst){
     opj_set_error_handler(l_codec, error_callback, NULL);
  
     //fprintf(stdout, "Setting up openjpeg encoder\n");
+    image->color_space = OPJ_CLRSPC_SRGB;
     if (!opj_setup_encoder(l_codec, &parameters, image)) {
         fprintf(stderr, "Encode image failed\n");
         opj_destroy_codec(l_codec);

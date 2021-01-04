@@ -3,7 +3,6 @@
 #include <KM_fileio.h>
 #include <AS_DCP.h>
 #include <PCMParserList.h>
-//#include <Metadata.h>
 
 using namespace ASDCP;
 
@@ -28,6 +27,17 @@ Result_t fill_writer_info(WriterInfo *info) {
     return result;
 }
 
+#if 0
+namespace ASDCP {
+  Result_t JP2K_PDesc_to_MD(const ASDCP::JP2K::PictureDescriptor& PDesc,
+			    const ASDCP::Dictionary& dict,
+			    ASDCP::MXF::GenericPictureEssenceDescriptor& GenericPictureEssenceDescriptor,
+			    ASDCP::MXF::JPEG2000PictureSubDescriptor& EssenceSubDescriptor);
+}
+#endif
+
+//const ASDCP::Dictionary *g_dict =0;
+
 extern "C" int write_mxf(char *input_path, char *output_file) {
     AESEncContext*  Context = 0;
     HMACContext* HMAC = 0;
@@ -37,6 +47,9 @@ extern "C" int write_mxf(char *input_path, char *output_file) {
     JP2K::PictureDescriptor PDesc;
     JP2K::SequenceParser Parser;
    
+    //ASDCP::MXF::FileDescriptor *essence_descriptor = 0;
+    //ASDCP::MXF::InterchangeObject_list_t essence_sub_descriptors;
+
     ui32_t in_duration = 0xffffffff; 
     std::string out_file = std::string(output_file);  
     Kumu::PathList_t filenames;  // list of filenames to be processed      
@@ -47,6 +60,9 @@ extern "C" int write_mxf(char *input_path, char *output_file) {
     	fprintf(stderr, "Requires at least one input file\n");
 	    return -1;
     }
+
+    //g_dict = &ASDCP::DefaultSMPTEDict();
+    //assert(g_dict);
 
     //set up essence parser
     Result_t result = Parser.OpenRead(filenames.front(), true);
@@ -70,30 +86,65 @@ extern "C" int write_mxf(char *input_path, char *output_file) {
     }
 #endif
 
-    if (ASDCP_SUCCESS(result)) {
-        fill_writer_info(&info);
-	    result = Writer.OpenWrite(output_file, info, PDesc); 
-    }
+#if 0
+        //use RGB
+	    ASDCP::MXF::RGBAEssenceDescriptor* tmp_dscr = new ASDCP::MXF::RGBAEssenceDescriptor(g_dict);
+	    essence_sub_descriptors.push_back(new ASDCP::MXF::JPEG2000PictureSubDescriptor(g_dict));
+	  
+	    result = ASDCP::JP2K_PDesc_to_MD(PDesc, *g_dict,
+					   *static_cast<ASDCP::MXF::GenericPictureEssenceDescriptor*>(tmp_dscr), 				   *static_cast<ASDCP::MXF::JPEG2000PictureSubDescriptor*>(essence_sub_descriptors.back()));
 
-    if (ASDCP_SUCCESS(result)) {
-        ui32_t duration = 0;
-        result = Parser.Reset();
+	    if (ASDCP_SUCCESS(result)) {
+	        tmp_dscr->CodingEquations = Options.coding_equations;
+	        tmp_dscr->TransferCharacteristic = Options.transfer_characteristic;
+	        tmp_dscr->ColorPrimaries = Options.color_primaries;
+	        tmp_dscr->ScanningDirection = 0;
+	        tmp_dscr->PictureEssenceCoding = Options.picture_coding;
+	        tmp_dscr->ComponentMaxRef = Options.rgba_MaxRef;
+	        tmp_dscr->ComponentMinRef = Options.rgba_MinRef;
 
-        while (ASDCP_SUCCESS(result) && duration++ < in_duration){
-	        result = Parser.ReadFrame(FrameBuffer);
-	        if (ASDCP_SUCCESS(result)) {
-    	        result = Writer.WriteFrame(FrameBuffer, Context, HMAC);
-    	    }
+	        if (Options.md_min_luminance || Options.md_max_luminance ) {
+	            tmp_dscr->MasteringDisplayMinimumLuminance = Options.md_min_luminance;
+		        tmp_dscr->MasteringDisplayMaximumLuminance = Options.md_max_luminance;
+		    }
+
+	        if (Options.md_primaries.HasValue()) {
+		        tmp_dscr->MasteringDisplayPrimaries = Options.md_primaries;
+		        tmp_dscr->MasteringDisplayWhitePointChromaticity = Options.md_white_point;
+		    }
+	        essence_descriptor = static_cast<ASDCP::MXF::FileDescriptor*>(tmp_dscr);
         }
-    }
+#endif  
 
-    if (result == RESULT_ENDOFFILE) {
-	    result = RESULT_OK;
-    }
+        if (ASDCP_SUCCESS(result)) {
+            fill_writer_info(&info);
+	        result = Writer.OpenWrite(output_file, info, PDesc); 
+        }
 
-    if (ASDCP_SUCCESS(result)) {
-        result = Writer.Finalize();
-    }
+        if (ASDCP_SUCCESS(result)) {
+            ui32_t duration = 0;
+            result = Parser.Reset();
+
+            while (ASDCP_SUCCESS(result) && duration++ < in_duration){
+	            result = Parser.ReadFrame(FrameBuffer);
+	            if (ASDCP_SUCCESS(result)) {
+    	            result = Writer.WriteFrame(FrameBuffer, Context, HMAC);
+    	        }
+            }
+        }
+
+        if (result == RESULT_ENDOFFILE) {
+	        result = RESULT_OK;
+        }
+
+        if (ASDCP_SUCCESS(result)) {
+            result = Writer.Finalize();
+        }
 
     return 0;
 }
+
+int test(){
+    return 0;
+}
+

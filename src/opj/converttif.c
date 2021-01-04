@@ -45,7 +45,7 @@
 #include <limits.h>
 
 #include <tiffio.h>
-#include <openjpeg-2.3/openjpeg.h>
+#include <openjpeg-2.4/openjpeg.h>
 #include <inttypes.h>
 
 #include "convert.h"

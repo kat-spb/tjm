@@ -102,7 +102,7 @@ void set_extended_encoder_parameters(int profile, opj_cparameters_t *parameters)
 }
 
 
-int read_image(opj_image_t **p_image, char *src){
+extern "C" int read_image(opj_image_t **p_image, char *src){
     int fmt_e = detect_format_by_extension(src);
     int fmt_h = detect_format_by_magicnum(src);
     //printf("fmt_e=%d fmt_h=%d\n", fmt_e, fmt_h);
@@ -188,7 +188,7 @@ void set_cinema_encoder_parameters(int cinema_profile, opj_cparameters_t *parame
     }
 }
 
-int write_image(opj_image_t *image, const char *dst){
+extern "C" int write_image(opj_image_t *image, const char *dst){
     int rc = -1;
 #if 0
     int max_comp_size;

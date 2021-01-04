@@ -1,4 +1,3 @@
-#include <AS_02.h>
 #include <getopt.h>
 #include "filelist.h"
 #include "opj.h"
@@ -13,41 +12,23 @@ void usage(const char *name) {
     exit(1);
 }
 
-const ASDCP::Dictionary *g_dict = NULL;
-
 //using namespace ASDCP;
 
 struct mxf_parameters_t{
      int x;
-    //UL picture_coding;
+     ASDCP::UL picture_coding;
 };
 
-#if 0
-//local program identification info written to file headers
-class TJMInfo : public WriterInfo
-{
-public:
-  TJMInfo() {
-      static byte_t default_ProductUUID_Data[UUIDlen] =
-      {0x7d, 0x83, 0x6e, 0x16, 0x37, 0xc7, 0x4c, 0x22,
-	0xb2, 0xe0, 0x46, 0xa7, 0x17, 0xe8, 0x4f, 0x42};
-
-      memcpy(ProductUUID, default_ProductUUID_Data, UUIDlen);
-      CompanyName = "TJM";
-      ProductName = "TJM converter";
-      ProductVersion = ASDCP::Version();
-  }
-} cTJMInfo;
-#endif
 
 class TJMOptions {
     TJMOptions();
 public:
     char *in_path;
+    char *j2k_path;
     char *out_path;
     Kumu::PathList_t filenames;  // list of filenames to be processed
     TJMOptions(int argc, const char** argv);
-    struct mxf_parameters_t params;  
+    struct mxf_parameters_t params;
 };
 
 TJMOptions::TJMOptions(int argc, const char** argv)
@@ -128,24 +109,14 @@ TJMOptions::TJMOptions(int argc, const char** argv)
 }
 
 int main(int argc, const char** argv) {
-    //init global dictionary
-    g_dict =  &ASDCP::DefaultSMPTEDict();
-    assert(g_dict);
-#if 0
-    g_dict->Dump(stdout);
-#endif
 
     //main process
     TJMOptions Options(argc, argv);
 
-#if 1
     if (!write_mxf((char*)Options.in_path, (char*)Options.out_path)){
         fprintf(stderr, "Write MXF failed\n");
         return 0;
     }
-#else
-    test();
-#endif
-    
+
     return 0;
 }

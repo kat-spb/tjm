@@ -267,19 +267,19 @@ CommandOptions(int argc, const char** argv) :
 	    }
 	    else {
 		    fprintf(stderr, "Unrecognized argument: %s\n", argv[i]);
+		    usage(argv[0]);
 		    return;
 	    }
     }
 
-        if ( filenames.size() < 2 ){
-	        fputs("Option requires at least two filename arguments: <input-file> <output-file>\n", stderr);
-	        return;
-        }
-    
-        out_file = filenames.back();
-        filenames.pop_back();
-
+    if (filenames.size() < 2 ){
+	    fprintf("Option requires at least two filename arguments: <input-file> <output-file>\n");
+	    return;
     }
+    
+    out_file = filenames.back();
+    filenames.pop_back();
+
 };
 
 namespace ASDCP {
@@ -291,7 +291,7 @@ namespace ASDCP {
   Result_t PCM_ADesc_to_MD(ASDCP::PCM::AudioDescriptor& ADesc, ASDCP::MXF::WaveAudioDescriptor* ADescObj);
 }
 
-Result_t write_JP2K_file(CommandOptions& Options) {
+Result_t write_file(CommandOptions& Options) {
   AESEncContext*          Context = 0;
   HMACContext*            HMAC = 0;
   AS_02::JP2K::MXFWriter  Writer;

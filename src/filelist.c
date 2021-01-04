@@ -87,7 +87,22 @@ int get_id(char *filename) {
     return id;
 }
 
-//full name as <path>/<base>.<ext> is necessary, don't free it
+//split filename as <dir>/<name.ext>, don't free parts and free result
+char *get_dirname(const char *filename, char **pdir) {  
+    char *result = strdup(filename);
+    char *name = strrchr(result, '/');
+    if (name) {
+        *name++ = '\0';
+        *pdir = result;
+    }
+    else {
+        name = result;
+        *pdir = (char*)".";
+    }
+    return result; 
+}
+
+//split name as <path>/<base>.<ext> is necessary, don't free parts of it and free result
 char *split_filename(const char *filename, char **ppath, char **pbase, char **pext) {  
     char *result = strdup(filename);
     char *base = strrchr(result, '/');

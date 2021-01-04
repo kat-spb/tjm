@@ -37,7 +37,7 @@ static void info_callback(const char *msg, void *client_data)
 int detect_format_by_extension(const char *filename) {
         static const char *extensions[] = {"tif", "j2k", "j2c", "jp2"};
         static const int format[] = {FMT_TIF, FMT_J2K, FMT_J2C, FMT_JP2};
-        char *ext = strrchr(filename, '.');
+        char *ext = (char*)strrchr(filename, '.');
         if (ext == NULL)
             return FMT_UNKNOWN;
         ext++;
@@ -53,7 +53,7 @@ int detect_format_by_extension(const char *filename) {
 
 int detect_format_by_magicnum(const char *filename) {
     FILE *fd = fopen(filename, "rb");
-    int magic_number = 0x00000000;
+    unsigned int magic_number = 0x00000000;
     if (!fd) {
         fprintf(stderr, "Failed to open %s for reading", filename);
         return FMT_UNKNOWN;

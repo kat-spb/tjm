@@ -43,7 +43,7 @@
 #include <ctype.h>
 #include <limits.h>
 
-#include <openjpeg-2.3/openjpeg.h>
+#include <openjpeg-2.4/openjpeg.h>
 #include "convert.h"
 
 /*

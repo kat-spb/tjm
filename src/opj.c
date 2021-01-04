@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <openjpeg-2.3/opj_config.h>
+#include <openjpeg-2.4/opj_config.h>
 
 #include "opj/convert.h"
 

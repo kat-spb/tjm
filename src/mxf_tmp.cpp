@@ -5,7 +5,7 @@
 using namespace ASDCP;
 
 const ui32_t FRAME_BUFFER_SIZE = 60 * Kumu::Megabyte;
-const ASDCP::Dictionary *g_dict = 0;
+const ASDCP::Dictionary *dict = 0;
  
 const char*
 RationalToString(const ASDCP::Rational& r, char* buf, const ui32_t& len)
@@ -124,7 +124,7 @@ public:
   UL target_frame_transfer_characteristics, target_frame_color_primaries, target_frame_viewing_environment;
   ui32_t target_frame_min_ref, target_frame_max_ref;  
 
-  bool set_video_ref(const std::string& arg) {
+bool set_video_ref(const std::string& arg) {
     std::list<std::string> ref_tokens = Kumu::km_token_split(arg, ",");
     switch (ref_tokens.size()) {
         case 3:
@@ -145,7 +145,7 @@ public:
         return false;
     }
     return true;
-  }
+}
 
   bool set_display_primaries(const std::string& arg)
   {
@@ -219,11 +219,11 @@ public:
     return true;
   }
 
-  CommandOptions(int argc, const char** argv) :
+CommandOptions(int argc, const char** argv) :
     use_cdci_descriptor(true),
-    edit_rate(24,1), fb_size(FRAME_BUFFER_SIZE),
+    edit_rate(24000,1001), fb_size(FRAME_BUFFER_SIZE),
     show_ul_values_flag(false), partition_space(60),
-    mca_config(g_dict), rgba_MaxRef(1023), rgba_MinRef(0),
+    mca_config(dict), rgba_MaxRef(1023), rgba_MinRef(0),
     horizontal_subsampling(2), vertical_subsampling(2), component_depth(10),
     frame_layout(0), aspect_ratio(ASDCP::Rational(4,3)), aspect_ratio_flag(false), field_dominance(0),
     mxf_header_size(16384), cdci_WhiteRefLevel(940), cdci_BlackRefLevel(64), cdci_ColorRange(65536),
@@ -232,12 +232,12 @@ public:
 	target_frame_min_max_ref_flag(false), target_frame_viewing_environment_flag(false)
   {
 
-    picture_coding = UL(g_dict->ul(MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_7_0)); 
+    picture_coding = UL(dict->ul(MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_7_0)); 
 
     //set color system
-    coding_equations = g_dict->ul(MDD_CodingEquations_Rec2020);
-	transfer_characteristic = g_dict->ul(MDD_TransferCharacteristic_SMPTEST2084);
-	color_primaries = g_dict->ul(MDD_ColorPrimaries_ITU2020);
+    coding_equations = dict->ul(MDD_CodingEquations_Rec2020);
+	transfer_characteristic = dict->ul(MDD_TransferCharacteristic_SMPTEST2084);
+	color_primaries = dict->ul(MDD_ColorPrimaries_ITU2020);
 	use_cdci_descriptor = true;
     if (!set_video_ref("65535,65535,65535")) {
         fprintf(stderr, "set_video_ref() error\n");
@@ -267,20 +267,19 @@ public:
 	    }
 	    else {
 		    fprintf(stderr, "Unrecognized argument: %s\n", argv[i]);
-		    usage();
 		    return;
 	    }
     }
 
-    if (filenames.size() < 2){
-	fprintf(stderr, "Option requires at least two filename arguments: <input-file> <output-file>\n");
-	return;
+        if ( filenames.size() < 2 ){
+	        fputs("Option requires at least two filename arguments: <input-file> <output-file>\n", stderr);
+	        return;
+        }
+    
+        out_file = filenames.back();
+        filenames.pop_back();
+
     }
-
-    out_file = filenames.back();
-    filenames.pop_back();
-
-  }
 };
 
 namespace ASDCP {
@@ -292,7 +291,7 @@ namespace ASDCP {
   Result_t PCM_ADesc_to_MD(ASDCP::PCM::AudioDescriptor& ADesc, ASDCP::MXF::WaveAudioDescriptor* ADescObj);
 }
 
-Result_t write_file(CommandOptions& Options) {
+Result_t write_JP2K_file(CommandOptions& Options) {
   AESEncContext*          Context = 0;
   HMACContext*            HMAC = 0;
   AS_02::JP2K::MXFWriter  Writer;
@@ -311,43 +310,39 @@ Result_t write_file(CommandOptions& Options) {
         Parser.FillPictureDescriptor(PDesc);
         PDesc.EditRate = Options.edit_rate;
 
-#if 1
-	    fprintf(stderr, "JPEG 2000 pictures\n");
-	    fputs("PictureDescriptor:\n", stderr);
-        fprintf(stderr, "Frame Buffer size: %u\n", Options.fb_size);
-	    JP2K::PictureDescriptorDump(PDesc);
+#if 0
+	fprintf(stderr, "JPEG 2000 pictures\n");
+	fprintf(stderr,"PictureDescriptor:\n");
+	fprintf(stderr, "Frame Buffer size: %u\n", Options.fb_size);
+	JP2K::PictureDescriptorDump(PDesc);
 #endif
 
         //use RGB
-	    ASDCP::MXF::RGBAEssenceDescriptor* tmp_dscr = new ASDCP::MXF::RGBAEssenceDescriptor(g_dict);
-	    essence_sub_descriptors.push_back(new ASDCP::MXF::JPEG2000PictureSubDescriptor(g_dict));
-	  
-	    result = ASDCP::JP2K_PDesc_to_MD(PDesc, *g_dict,
-					   *static_cast<ASDCP::MXF::GenericPictureEssenceDescriptor*>(tmp_dscr),
-					   *static_cast<ASDCP::MXF::JPEG2000PictureSubDescriptor*>(essence_sub_descriptors.back()));
+	ASDCP::MXF::RGBAEssenceDescriptor* tmp_dscr = new ASDCP::MXF::RGBAEssenceDescriptor(dict);
+	essence_sub_descriptors.push_back(new ASDCP::MXF::JPEG2000PictureSubDescriptor(dict));
+	result = ASDCP::JP2K_PDesc_to_MD(PDesc, *dict,
+				   *static_cast<ASDCP::MXF::GenericPictureEssenceDescriptor*>(tmp_dscr), 				   *static_cast<ASDCP::MXF::JPEG2000PictureSubDescriptor*>(essence_sub_descriptors.back()));
 
-	    if (ASDCP_SUCCESS(result)) {
-	        tmp_dscr->CodingEquations = Options.coding_equations;
-	        tmp_dscr->TransferCharacteristic = Options.transfer_characteristic;
-	        tmp_dscr->ColorPrimaries = Options.color_primaries;
-	        tmp_dscr->ScanningDirection = 0;
-	        tmp_dscr->PictureEssenceCoding = Options.picture_coding;
-	        tmp_dscr->ComponentMaxRef = Options.rgba_MaxRef;
-	        tmp_dscr->ComponentMinRef = Options.rgba_MinRef;
+	if (ASDCP_SUCCESS(result)) {
+    	    tmp_dscr->CodingEquations = Options.coding_equations;
+    	    tmp_dscr->TransferCharacteristic = Options.transfer_characteristic;
+    	    tmp_dscr->ColorPrimaries = Options.color_primaries;
+    	    tmp_dscr->ScanningDirection = 0;
+    	    tmp_dscr->PictureEssenceCoding = Options.picture_coding;
+    	    tmp_dscr->ComponentMaxRef = Options.rgba_MaxRef;
+	    tmp_dscr->ComponentMinRef = Options.rgba_MinRef;
+    	    if (Options.md_min_luminance || Options.md_max_luminance ) {
+        	tmp_dscr->MasteringDisplayMinimumLuminance = Options.md_min_luminance;
+        	tmp_dscr->MasteringDisplayMaximumLuminance = Options.md_max_luminance;
+    	    }
 
-	        if (Options.md_min_luminance || Options.md_max_luminance ) {
-	            tmp_dscr->MasteringDisplayMinimumLuminance = Options.md_min_luminance;
-		        tmp_dscr->MasteringDisplayMaximumLuminance = Options.md_max_luminance;
-		    }
-
-	        if (Options.md_primaries.HasValue()) {
-		        tmp_dscr->MasteringDisplayPrimaries = Options.md_primaries;
-		        tmp_dscr->MasteringDisplayWhitePointChromaticity = Options.md_white_point;
-		    }
-	        essence_descriptor = static_cast<ASDCP::MXF::FileDescriptor*>(tmp_dscr);
+	    if (Options.md_primaries.HasValue()) {
+    	        tmp_dscr->MasteringDisplayPrimaries = Options.md_primaries;
+        	tmp_dscr->MasteringDisplayWhitePointChromaticity = Options.md_white_point;
+	    }
+	    essence_descriptor = static_cast<ASDCP::MXF::FileDescriptor*>(tmp_dscr);
         }
     }
-
 
     if (ASDCP_SUCCESS(result)){
         WriterInfo Info = c_TJMInfo;  // fill in your favorite identifiers here
@@ -357,7 +352,8 @@ Result_t write_file(CommandOptions& Options) {
 
         if (ASDCP_SUCCESS(result)) {
 	        result = Writer.OpenWrite(Options.out_file, Info, essence_descriptor, essence_sub_descriptors, Options.edit_rate, Options.mxf_header_size, Options.index_strategy, Options.partition_space);
-	    }
+		//result = Writer.OpenWriteCustom(Options.out_file, Info, PDesc, 16384, essence_descriptor);
+        }
     }
 
     if (ASDCP_SUCCESS(result)) {
@@ -365,8 +361,8 @@ Result_t write_file(CommandOptions& Options) {
         result = Parser.Reset();
 
         while (ASDCP_SUCCESS(result) && duration++ < Options.in_duration){
-	        result = Parser.ReadFrame(FrameBuffer);
-	        if (ASDCP_SUCCESS(result)) {
+	    result = Parser.ReadFrame(FrameBuffer);
+	    if (ASDCP_SUCCESS(result)) {
     	        result = Writer.WriteFrame(FrameBuffer, Context, HMAC);
     	    }
         }
@@ -380,18 +376,17 @@ Result_t write_file(CommandOptions& Options) {
         result = Writer.Finalize();
     }
 
-  return result;
+    return result;
 }
 
 int main(int argc, const char** argv) {
     Result_t result = RESULT_OK;
 
-  g_dict = &ASDCP::DefaultSMPTEDict();
-  assert(g_dict);
+    dict = &ASDCP::DefaultSMPTEDict();
+    assert(dict);
 #if 0
-  g_dict->Dump(stdout);
+    dict->Dump(stdout);
 #endif
-
 
     CommandOptions Options(argc, argv);
 
@@ -399,7 +394,7 @@ int main(int argc, const char** argv) {
     result = ASDCP::RawEssenceType(Options.filenames.front().c_str(), EssenceType);
 
     if (ASDCP_SUCCESS(result)){
-       result = write_file(Options);
+       result = write_JP2K_file(Options);
     }
 
     if (ASDCP_FAILURE(result)){

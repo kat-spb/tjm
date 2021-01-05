@@ -1,0 +1,121 @@
+diff --git a/src/AS_DCP.h b/src/AS_DCP.h
+index fa8b00a..17595bc 100755
+--- a/src/AS_DCP.h
++++ b/src/AS_DCP.h
+@@ -146,6 +146,10 @@ typedef unsigned int   ui32_t;
+ // All library components are defined in the namespace ASDCP
+ //
+ namespace ASDCP {
++  namespace MXF {
++    class RGBAEssenceDescriptor;
++  }
++
+   //
+   // The version number declaration and explanation have moved to ../configure.ac
+   const char* Version();
+@@ -1262,6 +1266,13 @@ namespace ASDCP {
+ 	  Result_t OpenWrite(const std::string& filename, const WriterInfo&,
+ 			     const PictureDescriptor&, ui32_t HeaderSize = 16384);
+ 
++	  // Open the file for writing. The file must not exist. Returns error if
++	  // the operation cannot be completed or if nonsensical data is discovered
++	  // in the essence descriptor.
++	  Result_t OpenWriteCustom(const std::string& filename, const WriterInfo&,
++			     const PictureDescriptor&, ui32_t HeaderSize = 16384,
++			     ASDCP::MXF::RGBAEssenceDescriptor *rgbaDesc = NULL);
++
+ 	  // Writes a frame of essence to the MXF file. If the optional AESEncContext
+ 	  // argument is present, the essence is encrypted prior to writing.
+ 	  // Fails if the file is not open, is finalized, or an operating system
+diff --git a/src/AS_DCP_JP2K.cpp b/src/AS_DCP_JP2K.cpp
+index 6ad9eef..e92c7dd 100755
+--- a/src/AS_DCP_JP2K.cpp
++++ b/src/AS_DCP_JP2K.cpp
+@@ -1148,6 +1148,8 @@ public:
+ 
+   virtual ~lh__Writer(){}
+ 
++  void     EssenceDescriptorSetup(ASDCP::MXF::RGBAEssenceDescriptor *rgbaDesc);
++
+   Result_t OpenWrite(const std::string&, EssenceType_t type, ui32_t HeaderSize);
+   Result_t SetSourceStream(const PictureDescriptor&, const std::string& label,
+ 			   ASDCP::Rational LocalEditRate = ASDCP::Rational(0,0));
+@@ -1155,6 +1157,29 @@ public:
+   Result_t Finalize();
+ };
+ 
++
++void
++lh__Writer::EssenceDescriptorSetup(ASDCP::MXF::RGBAEssenceDescriptor *rgbaDesc)
++{
++  RGBAEssenceDescriptor* tmp_rgba = new RGBAEssenceDescriptor(m_Dict);
++
++  if (rgbaDesc == NULL) {
++    tmp_rgba->ComponentMaxRef = 4095;
++    tmp_rgba->ComponentMinRef = 0;
++  } else {
++    tmp_rgba->CodingEquations = UL(rgbaDesc->CodingEquations);
++    tmp_rgba->TransferCharacteristic = UL(rgbaDesc->TransferCharacteristic);
++    tmp_rgba->ColorPrimaries = UL(rgbaDesc->ColorPrimaries);
++    tmp_rgba->PictureEssenceCoding = UL(rgbaDesc->ColorPrimaries);
++    tmp_rgba->ComponentMaxRef = rgbaDesc->ComponentMaxRef;
++    tmp_rgba->ComponentMinRef = rgbaDesc->ComponentMinRef;
++    tmp_rgba->MasteringDisplayMinimumLuminance = rgbaDesc->MasteringDisplayMinimumLuminance;
++    tmp_rgba->MasteringDisplayMaximumLuminance = rgbaDesc->MasteringDisplayMaximumLuminance;
++  }
++
++  m_EssenceDescriptor = tmp_rgba;
++}
++
+ // Open the file for writing. The file must not exist. Returns error if
+ // the operation cannot be completed.
+ ASDCP::Result_t
+@@ -1168,11 +1193,9 @@ lh__Writer::OpenWrite(const std::string& filename, EssenceType_t type, ui32_t He
+   if ( ASDCP_SUCCESS(result) )
+     {
+       m_HeaderSize = HeaderSize;
+-      RGBAEssenceDescriptor* tmp_rgba = new RGBAEssenceDescriptor(m_Dict);
+-      tmp_rgba->ComponentMaxRef = 4095;
+-      tmp_rgba->ComponentMinRef = 0;
++      if (m_EssenceDescriptor == NULL)
++        EssenceDescriptorSetup(NULL);
+ 
+-      m_EssenceDescriptor = tmp_rgba;
+       m_EssenceSubDescriptor = new JPEG2000PictureSubDescriptor(m_Dict);
+       m_EssenceSubDescriptorList.push_back((InterchangeObject*)m_EssenceSubDescriptor);
+ 
+@@ -1356,8 +1379,9 @@ ASDCP::JP2K::MXFWriter::RIP()
+ // Open the file for writing. The file must not exist. Returns error if
+ // the operation cannot be completed.
+ ASDCP::Result_t
+-ASDCP::JP2K::MXFWriter::OpenWrite(const std::string& filename, const WriterInfo& Info,
+-				  const PictureDescriptor& PDesc, ui32_t HeaderSize)
++ASDCP::JP2K::MXFWriter::OpenWriteCustom(const std::string& filename, const WriterInfo& Info,
++				  const PictureDescriptor& PDesc, ui32_t HeaderSize,
++				  ASDCP::MXF::RGBAEssenceDescriptor *rgbaDesc)
+ {
+   if ( Info.LabelSetType == LS_MXF_SMPTE )
+     m_Writer = new h__Writer(DefaultSMPTEDict());
+@@ -1365,6 +1389,7 @@ ASDCP::JP2K::MXFWriter::OpenWrite(const std::string& filename, const WriterInfo&
+     m_Writer = new h__Writer(DefaultInteropDict());
+ 
+   m_Writer->m_Info = Info;
++  m_Writer->EssenceDescriptorSetup(rgbaDesc);
+ 
+   Result_t result = m_Writer->OpenWrite(filename, ASDCP::ESS_JPEG_2000, HeaderSize);
+ 
+@@ -1377,6 +1402,14 @@ ASDCP::JP2K::MXFWriter::OpenWrite(const std::string& filename, const WriterInfo&
+   return result;
+ }
+ 
++// Open the file for writing. The file must not exist. Returns error if
++// the operation cannot be completed.
++ASDCP::Result_t
++ASDCP::JP2K::MXFWriter::OpenWrite(const std::string& filename, const WriterInfo& Info,
++				  const PictureDescriptor& PDesc, ui32_t HeaderSize)
++{
++  return OpenWriteCustom(filename, Info, PDesc, HeaderSize, NULL);
++}
+ 
+ // Writes a frame of essence to the MXF file. If the optional AESEncContext
+ // argument is present, the essence is encrypted prior to writing.

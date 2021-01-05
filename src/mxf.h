@@ -1,13 +1,16 @@
 #ifndef _MMXF_H_
 #define _MMXF_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <KM_fileio.h>
-#include <AS_DCP.h>
-#include <AS_02.h>
-#include <AS_02_ACES.h>
+#include "filelist.h"
 
-extern "C" int fill_writer_info(ASDCP::WriterInfo &info);
+//extern "C" int write_mxf(filelist_t *filelist, char *output_file);
 extern "C" int write_mxf(char *in_path, char *out_file);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif //_MMXF_H_

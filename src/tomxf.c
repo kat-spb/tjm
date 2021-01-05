@@ -120,6 +120,7 @@ int main (int argc, char **argv) {
 #endif
 
     //TODO: callbacks for the mxf writer */
+    printf("%s <----> %s\n", in_path, out_path);
     if (write_mxf(in_path, out_path) != 0 )  {
         fprintf(stderr, "Could not create MXF file\n");
     }

@@ -124,7 +124,7 @@ public:
   UL target_frame_transfer_characteristics, target_frame_color_primaries, target_frame_viewing_environment;
   ui32_t target_frame_min_ref, target_frame_max_ref;  
 
-bool set_video_ref(const std::string& arg) {
+  bool set_video_ref(const std::string& arg) {
     std::list<std::string> ref_tokens = Kumu::km_token_split(arg, ",");
     switch (ref_tokens.size()) {
         case 3:
@@ -145,7 +145,7 @@ bool set_video_ref(const std::string& arg) {
         return false;
     }
     return true;
-}
+  }
 
   bool set_display_primaries(const std::string& arg)
   {
@@ -219,7 +219,7 @@ bool set_video_ref(const std::string& arg) {
     return true;
   }
 
-CommandOptions(int argc, const char** argv) :
+  CommandOptions(int argc, const char** argv) :
     use_cdci_descriptor(true),
     edit_rate(24,1), fb_size(FRAME_BUFFER_SIZE),
     show_ul_values_flag(false), partition_space(60),
@@ -267,19 +267,20 @@ CommandOptions(int argc, const char** argv) :
 	    }
 	    else {
 		    fprintf(stderr, "Unrecognized argument: %s\n", argv[i]);
-		    usage(argv[0]);
+		    usage();
 		    return;
 	    }
     }
 
-    if (filenames.size() < 2 ){
-	    fprintf("Option requires at least two filename arguments: <input-file> <output-file>\n");
-	    return;
+    if (filenames.size() < 2){
+	fprintf(stderr, "Option requires at least two filename arguments: <input-file> <output-file>\n");
+	return;
     }
-    
+
     out_file = filenames.back();
     filenames.pop_back();
 
+  }
 };
 
 namespace ASDCP {
@@ -322,7 +323,8 @@ Result_t write_file(CommandOptions& Options) {
 	    essence_sub_descriptors.push_back(new ASDCP::MXF::JPEG2000PictureSubDescriptor(g_dict));
 	  
 	    result = ASDCP::JP2K_PDesc_to_MD(PDesc, *g_dict,
-					   *static_cast<ASDCP::MXF::GenericPictureEssenceDescriptor*>(tmp_dscr), 				   *static_cast<ASDCP::MXF::JPEG2000PictureSubDescriptor*>(essence_sub_descriptors.back()));
+					   *static_cast<ASDCP::MXF::GenericPictureEssenceDescriptor*>(tmp_dscr),
+					   *static_cast<ASDCP::MXF::JPEG2000PictureSubDescriptor*>(essence_sub_descriptors.back()));
 
 	    if (ASDCP_SUCCESS(result)) {
 	        tmp_dscr->CodingEquations = Options.coding_equations;
@@ -344,7 +346,7 @@ Result_t write_file(CommandOptions& Options) {
 		    }
 	        essence_descriptor = static_cast<ASDCP::MXF::FileDescriptor*>(tmp_dscr);
         }
-	}
+    }
 
 
     if (ASDCP_SUCCESS(result)){
@@ -397,7 +399,7 @@ int main(int argc, const char** argv) {
     result = ASDCP::RawEssenceType(Options.filenames.front().c_str(), EssenceType);
 
     if (ASDCP_SUCCESS(result)){
-       result = write_JP2K_file(Options);
+       result = write_file(Options);
     }
 
     if (ASDCP_FAILURE(result)){

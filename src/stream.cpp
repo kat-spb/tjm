@@ -1,7 +1,8 @@
 #include <getopt.h>
+#include <cstdlib>
 #include "filelist.h"
 #include "opj.h"
-#include "mxf.h"
+#include "mxf_new.h"
 
 void usage(const char *name) {
     FILE *fd = stdout;
@@ -9,7 +10,7 @@ void usage(const char *name) {
     fprintf(fd, "Usage:\n");
     fprintf(fd, "       %s <input_path> <output_file> \n\n", name);
     fclose(fd);
-    exit(1);
+    std::exit(1);
 }
 
 //using namespace ASDCP;
@@ -65,6 +66,7 @@ TJMOptions::TJMOptions(int argc, const char** argv)
         fprintf(stderr, "Outdir should be a directory, %s found. May be the rath doesn't exist.\n", outdir);
         return;
     }
+    j2k_path = strdup(outdir);
 
     filelist = get_filelist(in_path, "tif");
     sort_filelist(filelist);
@@ -97,12 +99,12 @@ TJMOptions::TJMOptions(int argc, const char** argv)
         cnt++;
     }
     free(filelist);
-
+#if 0
     if (filenames.size() < 1) {
     	fprintf(stderr, "Requires at least one input file\n");
 	    return;
     }
-    
+#endif    
     //fill_UHD_HDR_parameters(&params);
     
     free(tmp);
@@ -113,7 +115,10 @@ int main(int argc, const char** argv) {
     //main process
     TJMOptions Options(argc, argv);
 
-    if (!write_mxf((char*)Options.in_path, (char*)Options.out_path)){
+    printf("%s <----> %s\n", Options.in_path, Options.out_path);
+    Options.filenames.push_back(Options.in_path);
+    Options.filenames.push_back(Options.out_path);
+    if (write_mxf_new((char*)(Options.j2k_path), (char*)(Options.out_path))){
         fprintf(stderr, "Write MXF failed\n");
         return 0;
     }

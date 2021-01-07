@@ -8,7 +8,7 @@
 using namespace ASDCP;
 
 const ui32_t FRAME_BUFFER_SIZE = 40 * Kumu::Megabyte;
-const ASDCP::Rational default_picture_rate = EditRate_24;
+const ASDCP::Rational default_picture_rate = EditRate_23_98; //EditRate_24;
 const ASDCP::Dictionary *g_dict = 0;
 
 Result_t fill_writer_info(WriterInfo *info) {

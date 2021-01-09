@@ -47,6 +47,7 @@ void set_md_primaries_P3D65(ASDCP::MXF::ThreeColorPrimaries &md_primaries,  ASDC
     md_white_point.Y = 16450;    
 }
 
+
 void set_md_primaries_BT2020(ASDCP::MXF::ThreeColorPrimaries &md_primaries,  ASDCP::MXF::ColorPrimary &md_white_point){
     //BT2020 
     //R:x=0.708y=0.292 G:x=0.170y=0.797 B:x=0.131y=0.046 
@@ -120,24 +121,15 @@ extern "C" int write_mxf(char *input_path, char *output_file) {
     ASDCP::MXF::ColorPrimary md_white_point;
     set_md_primaries_BT2020(md_primaries, md_white_point);
     
-#if 1
-    ASDCP::MXF::RGBAEssenceDescriptor *tmp_dscr = new ASDCP::MXF::RGBAEssenceDescriptor(g_dict);
-    tmp_dscr->ComponentMaxRef = 65535;
-    tmp_dscr->ComponentMinRef = 0;
-#else
-    ASDCP::MXF::CDCIEssenceDescriptor* tmp_dscr = new ASDCP::MXF::CDCIEssenceDescriptor(g_dict);
+    ASDCP::MXF::RGBAEssenceDescriptor* tmp_dscr = new ASDCP::MXF::RGBAEssenceDescriptor(g_dict);
 	essence_sub_descriptors.push_back(new ASDCP::MXF::JPEG2000PictureSubDescriptor(g_dict));
-	result = ASDCP::JP2K_PDesc_to_MD(PDesc, *g_dict,
-					   *static_cast<ASDCP::MXF::GenericPictureEssenceDescriptor*>(tmp_dscr),
-					   *static_cast<ASDCP::MXF::JPEG2000PictureSubDescriptor*>(essence_sub_descriptors.back()));					   
+	result = ASDCP::JP2K_PDesc_to_MD(PDesc, *g_dict, 					      *static_cast<ASDCP::MXF::GenericPictureEssenceDescriptor*>(tmp_dscr),  					           *static_cast<ASDCP::MXF::JPEG2000PictureSubDescriptor*>(essence_sub_descriptors.back()));					   
     if (ASDCP_SUCCESS(result)) {
-        tmp_dscr->ComponentDepth = 16;
+        tmp_dscr->ComponentMaxRef = 65535;
+        tmp_dscr->ComponentMinRef = 0;
         tmp_dscr->FrameLayout = 0;
     	tmp_dscr->AspectRatio = ASDCP::Rational(16,9);
     	tmp_dscr->FieldDominance = 0; 
-    }
-#endif
-    if (ASDCP_SUCCESS(result)) {
         //MasteringDisplayLuminance
         tmp_dscr->MasteringDisplayMinimumLuminance = 50;
         tmp_dscr->MasteringDisplayMaximumLuminance = 40000000;
@@ -151,7 +143,7 @@ extern "C" int write_mxf(char *input_path, char *output_file) {
     tmp_dscr->CodingEquations = g_dict->ul(MDD_CodingEquations_Rec2020);
     tmp_dscr->TransferCharacteristic = g_dict->ul(MDD_TransferCharacteristic_SMPTEST2084);
     tmp_dscr->ColorPrimaries = g_dict->ul(MDD_ColorPrimaries_ITU2020);
-    tmp_dscr->PictureEssenceCoding = UL(g_dict->ul(MDD_JP2KEssenceCompression_IMFProfile_8K_Reversible_7_0));
+    tmp_dscr->PictureEssenceCoding = UL(g_dict->ul(MDD_JP2KEssenceCompression_IMFProfile_4K_Reversible_7_0));
 
     essence_descriptor = static_cast<ASDCP::MXF::FileDescriptor*>(tmp_dscr);
 

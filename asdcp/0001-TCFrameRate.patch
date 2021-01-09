@@ -1,0 +1,14 @@
+diff --git a/src/AS_02_internal.h b/src/AS_02_internal.h
+index b5d8282..f34f4f7 100644
+--- a/src/AS_02_internal.h
++++ b/src/AS_02_internal.h
+@@ -175,7 +175,8 @@ namespace AS_02
+ 
+ 	InitHeader(MXFVersion_2011, conformsToSpecifications);
+ 
+-	AddSourceClip(EditRate, EditRate/*TODO: for a moment*/, 0 /*no timecode track*/, TrackName, EssenceUL, DataDefinition, PackageLabel);
++	ui32_t TCFrameRate = derive_timecode_rate_from_edit_rate(EditRate);
++	AddSourceClip(EditRate, EditRate/*TODO: for a moment*/, TCFrameRate, TrackName, EssenceUL, DataDefinition, PackageLabel);
+ 	AddEssenceDescriptor(WrappingUL);
+ 
+ 	this->m_IndexWriter.SetPrimerLookup(&this->m_HeaderPart.m_Primer);

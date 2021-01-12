@@ -63,7 +63,7 @@ void set_md_primaries_BT2020(ASDCP::MXF::ThreeColorPrimaries &md_primaries,  ASD
     md_white_point.Y = 16450;  
 }
 
-extern "C" int write_mxf(char *input_path, char *output_file) {
+int write_mxf(char *input_path, char *output_file) {
 
     const ui32_t FRAME_BUFFER_SIZE = 40 * Kumu::Megabyte;
     const ASDCP::Rational default_picture_rate = Rational(24000,1001);

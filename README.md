@@ -59,15 +59,25 @@ make
 
 TODO:
 
-```dpkg-buildpackage -rfakeroot```
+```
+dpkg-buildpackage -rfakeroot
+```
 
 ## Instalation
 
 TODO:
 
-```make install```
+```
+make install
+```
+OR
+```
+sudo dpkg -i tjm
+```
 
-```sudo dpkg -i tjm```
+## Docker
+
+TODO:
 
 ## Documentation
 

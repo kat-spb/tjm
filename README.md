@@ -97,7 +97,7 @@ for get the same result with openjpeg and asdcp utilities
 Also you can try the process with TJM utilities:
 
 ```
-scripts/test_process < input_40.txt (or input_450.txt)
+scripts/test_process < data/input_40.txt (or input_450.txt)
 ```
 
 ## Docker
@@ -124,5 +124,7 @@ TODO: The offline documentation is available in the **doc/** directory.
 ## Examples
 
 Please, put your TIF image into data directory 
-scripts/test_process.sh < data/input_40.txt && mediainfo data/output.mxf
-
+```
+scripts/test_process.sh < data/input_40.txt 
+mediainfo data/output.mxf
+```

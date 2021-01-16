@@ -1,4 +1,5 @@
-FROM debian:testing
+FROM ubuntu:20.04
+#FROM debian:testing
 #we got to use our base docker image!!!
 # ENV NR_INSTALL_SILENT 1
 # ENV NR_INSTALL_USE_CP_NOT_LN 1
@@ -39,16 +40,5 @@ RUN  echo "Test the install....." && mkdir -p data
 COPY DTC-HDR-TIF-f-ML7_0000000.tif data/
 COPY DTC-HDR-TIF-f-ML7_0000178.tif data/
 COPY DTC-HDR-TIF-f-ML7_0000296.tif data/
-#RUN	scripts/test_process.sh < data/input_40.txt && mediainfo data/output.mxf
-	&& echo "Test is complete......." && pwd
-RUN    scripts/clone.sh data/DTC-HDR-TIF-f-ML7_0000000.tif data/input 0 10 \
-    && scripts/clone.sh data/DTC-HDR-TIF-f-ML7_0000178.tif data/input 11 20 \
-    && scripts/clone.sh data/DTC-HDR-TIF-f-ML7_0000296.tif data/input 21 30 \
-    && scripts/clone.sh data/DTC-HDR-TIF-f-ML7_0000000.tif data/input 31 40 \
-    && mkdir -p data/input_j2k \
-    && j2c -i data/input -o data/input_j2k \
-    && mkdir -p data/output_j2k \
-    && mxf -i data/input_j2k -o data/output_j2k/output.mxf \
-    && mediainfo data/output_j2k/output.mxf \
-    && echo "Test is complete......."  \
-    && pwd
+RUN  cd data/ && ../scripts/test_process.sh < input_40.txt && mediainfo output.mxf \
+     && echo "Test is complete......." && pwd

@@ -101,7 +101,7 @@ endif()
 
 #include(GenerateVersion)
 
-add_library(libtjm SHARED
+add_library(tjm SHARED
     # headers
     src/opj.h
     src/mxf.h

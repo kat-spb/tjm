@@ -39,6 +39,8 @@ RUN  echo "Test the install....." && mkdir -p data
 COPY DTC-HDR-TIF-f-ML7_0000000.tif data/
 COPY DTC-HDR-TIF-f-ML7_0000178.tif data/
 COPY DTC-HDR-TIF-f-ML7_0000296.tif data/
+#RUN	scripts/test_process.sh < data/input_40.txt && mediainfo data/output.mxf
+	&& echo "Test is complete......." && pwd
 RUN    scripts/clone.sh data/DTC-HDR-TIF-f-ML7_0000000.tif data/input 0 10 \
     && scripts/clone.sh data/DTC-HDR-TIF-f-ML7_0000178.tif data/input 11 20 \
     && scripts/clone.sh data/DTC-HDR-TIF-f-ML7_0000296.tif data/input 21 30 \

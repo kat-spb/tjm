@@ -1,18 +1,21 @@
 #!/bin/bash
+base_dir=`dirname "$0"`
 
 prepare_process(){
     src_template="$1"
-    start="$2"
-    finish="$3"
+    output_path="$2"
+    start="$3"
+    finish="$4"
 
-    template_path=`dirname "${src_template}"`
-    template_name=`basename "${src_template}"`
+    mkdir -p "${output_path}/input" "${output_path}/input_j2k"
+    mkdir -p "${output_path}/tmp_clone" "${output_path}/tmp_j2k"
 
-    mkdir -p "${template_path}/input"
-    `dirname "$0"`/clone.sh "${src_template}" "${template_path}/input" "${start}" "${finish}"
+    "${base_dir}/clone.sh" "${src_template}" "${output_path}/tmp_clone" "${start}" "${finish}"
+    j2c -i "${output_path}/tmp_clone" -o "${output_path}/tmp_j2k"
 
-    mkdir -p "${template_path}/input_j2k"
-    /usr/local/bin/j2c "${template_name}" "${template_path}/input" "${template_path}/input_j2k" "${start}" "${finish}"
+    mv "${output_path}/tmp_clone/"* "${output_path}/input/"
+    mv "${output_path}/tmp_j2k/"* "${output_path}/input_j2k/"
+    rm -rf "${output_path}/tmp_clone" "${output_path}/tmp_j2k"
 }
 
 if [ $# -ne 0 ]; then
@@ -25,14 +28,12 @@ if [ $# -ne 0 ]; then
 fi
 
 read output_path
-mkdir -p "${output_path}/input_j2k" "${output_path}/output_j2k" 
 while read src_template start_number finish_number; do
     if [ -z "${src_template}" ]; then
 	break
     fi
-    prepare_process "${src_template}" "${start_number}" "${finish_number}"
-    #Warning: variable ${template_xxx} updated by prepare_process
-    #mv "${template_path}/input_j2k/"* "${output_path}/input_j2k"
+    prepare_process "${src_template}" "${output_path}" "${start_number}" "${finish_number}"
 done
 
-/usr/local/bin/mxf "${output_path}/input_j2k/" "${output_path}/output_j2k/output.mxf"
+mxf -i "${output_path}/input_j2k/" -o "${output_path}/output.mxf"
+

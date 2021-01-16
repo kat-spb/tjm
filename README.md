@@ -102,7 +102,7 @@ scripts/test_process < input_40.txt (or input_450.txt)
 
 ## Docker
 
-Please, repare the images for copy to the container. 
+Please, prepare the images for copy to data/ (to container).
 
 Build docker image (you can use debian:testing or ubuntu:20.04 or based on):
 
@@ -123,5 +123,6 @@ TODO: The offline documentation is available in the **doc/** directory.
 
 ## Examples
 
-TODO:
+Please, put your TIF image into data directory 
+scripts/test_process.sh < data/input_40.txt && mediainfo data/output.mxf
 

@@ -27,6 +27,10 @@ endif()
 
 find_package(TIFF REQUIRED)
 
+if(NOT TIFF_FOUND)
+    message(SEND_ERROR "Couldn't found libtiff")
+endif()
+
 if(UNIX)
     include (FindPkgConfig)
     find_package(PkgConfig QUIET)
@@ -40,8 +44,11 @@ endif()
     #find_library(OpenJPEGLib_Debug_Path NAMES openjp2 PATHS ENV CMAKE_HINT PATH_SUFFIXES "lib")
 #endif()
 
-if(NOT TIFF_FOUND OR NOT OPENJPEG_FOUND)
-    message(SEND_ERROR "Couldn't found libtiff or libopenjp2")
+if (NOT OPENJPEG_FOUND)
+    add_library(openjp2 SHARED IMPORTED)
+    set_property(TARGET openjp2 PROPERTY
+             IMPORTED_LOCATION /usr/local/lib/libopenjp2.so)
+    target_link_libraries(${TARGET} openjp2)
 endif()
 
 #find kumu and asdcp

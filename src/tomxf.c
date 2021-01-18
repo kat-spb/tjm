@@ -17,6 +17,7 @@ void usage(char *name) {
     fprintf(fd, "Required:\n");
     fprintf(fd, "       -i | --input <file>            - input file or directory\n");
     fprintf(fd, "       -o | --output <file>           - output file or directory\n");
+    fprintf(fd, "       -r | --frame_rate <24|0>       - frame_rate\n             Choose between 24 for 24.000FPS or 0 for 23.976FPS (default)\n");
     fprintf(fd, "\n");
     fprintf(fd, "Options:\n");
     fprintf(fd, "       -h | --help                    - show help\n");
@@ -29,6 +30,7 @@ void usage(char *name) {
 int main (int argc, char **argv) {
     char *in_path  = NULL;
     char *out_path = NULL;
+    int frame_rate;
     //filelist_t *filelist;
 
     if (argc <= 1) {
@@ -43,12 +45,13 @@ int main (int argc, char **argv) {
             {"help",           required_argument, 0, 'h'},
             {"input",          required_argument, 0, 'i'},
             {"output",         required_argument, 0, 'o'},
+            {"frame_rate",     required_argument, 0, 'r'},
             {0, 0, 0, 0}
         };
 
         int option_index = 0;
 
-        int c = getopt_long (argc, argv, "i:o:h",
+        int c = getopt_long (argc, argv, "i:o:r:h",
                          long_options, &option_index);
 
         if (c == -1) {
@@ -69,6 +72,14 @@ int main (int argc, char **argv) {
 
             case 'o':
                 out_path = optarg;
+                break;
+
+            case 'r':
+                frame_rate = strtol(optarg, NULL, 10);
+                if (frame_rate != 0 &&  frame_rate != 24) {
+                    fprintf(stderr, "Unsupported frame rate, set frame_rate to default 23.976(24000/1001)\n");
+                    frame_rate = 0;
+                }
                 break;
 
             case 'h':
@@ -120,8 +131,15 @@ int main (int argc, char **argv) {
 #endif
 
     //TODO: callbacks for the mxf writer */
-    printf("%s <----> %s\n", in_path, out_path);
-    if (write_mxf(in_path, out_path) != 0 )  {
+    char str[7];
+    if (frame_rate == 24) {
+        strcpy(str,"24.000");
+    }
+    else {
+        strcpy(str,"23.976");
+    }
+    printf("Pack images from %s to %s with frame_rate %s\n", in_path, out_path, str);
+    if (write_mxf(in_path, out_path, frame_rate) != 0 )  {
         fprintf(stderr, "Could not create MXF file\n");
     }
     else {

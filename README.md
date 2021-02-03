@@ -31,12 +31,14 @@ Options:
 Create MXF files from a sequence of j2k images
 
 ```
-mxf -i <input_path> -o <output_path>
+mxf -i <input_path> -o <output_path> [-r <frame_rate>]
 ```
 
 Required:
 * `-i, --input` path to a directory with the numbered J2K images
 * `-o, --output` path to MXF
+Optional:
+* `-r, --frame_rate 0|24` 24 is for 24.000FPS and 0 is for 23.976FPS (default)
 
 ## Dependencies
 

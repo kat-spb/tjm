@@ -21,6 +21,7 @@ RUN apt-get update \
     && cd asdcplib && pwd \
     && echo 'patching asdcplib' \
     && patch -p1 < ../tjm/asdcp/0001-TCFrameRate.patch \
+    && patch -p1 < ../tjm/asdcp/0002-FloatTCFrameRate.patch \
     && rm -rf build; mkdir -p build; cd build && pwd \
     && cmake .. && make -j4 && make install && cd ../.. \
     && echo "Prepare and install openjpeg" && cd openjpeg && pwd \

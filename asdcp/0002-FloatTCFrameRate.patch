@@ -1,0 +1,13 @@
+diff --git a/src/AS_DCP_internal.h b/src/AS_DCP_internal.h
+index 7162368..0df2de8 100755
+--- a/src/AS_DCP_internal.h
++++ b/src/AS_DCP_internal.h
+@@ -534,6 +534,8 @@ namespace ASDCP
+ 	  NewTrack.Clip->RoundedTimecodeBase = tc_frame_rate;
+ 	  NewTrack.Clip->StartTimecode = TCStart;
+ 	  NewTrack.Clip->DataDefinition = TCUL;
++	  if (tc_frame_rate * tc_edit_rate.Denominator != tc_edit_rate.Numerator)
++	    NewTrack.Clip->DropFrame = 1;
+ 
+ 	  return NewTrack;
+ 	}
